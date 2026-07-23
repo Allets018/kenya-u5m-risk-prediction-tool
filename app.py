@@ -17,7 +17,7 @@ from openai import OpenAI
 
 st.set_page_config(
     page_title="Under-Five Mortality Risk Tool",
-    page_icon="ðŸ‘¶",
+    page_icon="👶",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -851,7 +851,7 @@ with st.sidebar:
     st.markdown("---")
 
     with st.expander(
-        "Study-Focused AI Assistant",
+        "AI Assistant",
         expanded=False
     ):
 
