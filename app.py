@@ -118,6 +118,10 @@ st.markdown(
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = BASE_DIR / "models"
 
+# Use the repository root when models are uploaded there
+if not (MODEL_DIR / "logistic_tuned.joblib").exists():
+    MODEL_DIR = BASE_DIR
+
 
 # ---------------------------------------------------------
 # 4. LOAD MODELS AND METADATA
