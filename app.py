@@ -191,7 +191,7 @@ def load_artifacts():
     # Use the categories stored inside the fitted pipeline as the
     # authoritative app options. This prevents stale metadata categories
     # from being sent to the model as unknown values.
-    reference_model = models["Tuned XGBoost"]
+    reference_model = models["XGBoost"]
     preprocessor = reference_model.named_steps["pre_smote"]
     categorical_encoder = preprocessor.named_transformers_["categorical"]
 
