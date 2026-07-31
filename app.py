@@ -144,7 +144,7 @@ def load_artifacts():
         "XGBoost": joblib.load(
             MODEL_DIR / "xgboost.joblib"
         )
-    
+    }
 
     metadata = joblib.load(
         MODEL_DIR / "app_metadata.joblib"
