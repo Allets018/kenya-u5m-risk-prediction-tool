@@ -302,7 +302,8 @@ CATEGORY_ORDER = {
     ],
 
     "maternal_health_status": [
-        "Poor",
+        "Very bad",
+        "Bad",
         "Moderate",
         "Good",
         "Very good"
@@ -323,7 +324,8 @@ CATEGORY_ORDER = {
 
     "multiple_birth": [
         "Single birth",
-        "Twin birth"
+        "1st of multiple",
+        "2nd of multiple"
     ],
 
     # Nominal variables have no low-to-high ranking
@@ -343,8 +345,12 @@ CATEGORY_ORDER = {
     ],
 
     "marital_status": [
-        "Not married",
-        "Married"
+        "Never in union",
+        "Living with partner",
+        "Married",
+        "No longer living together/separated",
+        "Divorced",
+        "Widowed"
     ]
 }
 
