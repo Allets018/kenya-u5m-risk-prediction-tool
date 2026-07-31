@@ -132,19 +132,19 @@ if not (MODEL_DIR / "logistic_tuned.joblib").exists():
 def load_artifacts():
 
     models = {
-        "Tuned Logistic Regression": joblib.load(
-            MODEL_DIR / "logistic_tuned.joblib"
+        "Logistic Regression": joblib.load(
+            MODEL_DIR / "logistic_regression.joblib"
         ),
-        "Tuned SVM": joblib.load(
-            MODEL_DIR / "svm_tuned.joblib"
+        "SVM": joblib.load(
+            MODEL_DIR / "svm.joblib"
         ),
-        "Tuned Random Forest": joblib.load(
-            MODEL_DIR / "random_forest_tuned.joblib"
+        "Random Forest": joblib.load(
+            MODEL_DIR / "random_forest.joblib"
         ),
-        "Tuned XGBoost": joblib.load(
-            MODEL_DIR / "xgboost_tuned.joblib"
+        "XGBoost": joblib.load(
+            MODEL_DIR / "xgboost.joblib"
         )
-    }
+    
 
     metadata = joblib.load(
         MODEL_DIR / "app_metadata.joblib"
