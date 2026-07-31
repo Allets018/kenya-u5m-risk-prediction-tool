@@ -15,7 +15,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Under-Five Mortality Risk Tool",
-    page_icon="ðŸ‘¶",
+    page_icon="👶",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -118,6 +118,45 @@ MODEL_DIR = BASE_DIR
 
 # The saved artifacts are stored beside app.py in the GitHub repository.
 
+MODEL_COLUMN_MAP = {
+    "maternal_age_first_birth": "Maternal Age at 1st Birth",
+    "birth_interval": "Preceding Birth Interval",
+    "anc_visits": "Antenatal Care Visits",
+    "birth_weight": "Birth Weight",
+    "maternal_education": "Maternal Education",
+    "maternal_health_status": "Maternal Health Status",
+    "wealth_index": "Wealth Index",
+    "birth_order": "Birth Order",
+    "multiple_birth": "Child is Twin",
+    "child_sex": "Child Sex",
+    "birth_assistance": "Birth Assistance",
+    "residence": "Residence",
+    "marital_status": "Marital Status"
+}
+
+APP_COLUMN_MAP = {
+    model_name: app_name
+    for app_name, model_name in MODEL_COLUMN_MAP.items()
+}
+
+BACKGROUND_CATEGORY_MAP = {
+    "maternal_health_status": {
+        "Bad": "Poor",
+        "Very bad": "Poor"
+    },
+    "multiple_birth": {
+        "1st of multiple": "Twin birth",
+        "2nd of multiple": "Twin birth"
+    },
+    "marital_status": {
+        "Divorced": "Not married",
+        "Living with partner": "Not married",
+        "Never in union": "Not married",
+        "No longer living together/separated": "Not married",
+        "Widowed": "Not married"
+    }
+}
+
 
 # ---------------------------------------------------------
 # 4. LOAD MODELS AND METADATA
@@ -127,16 +166,16 @@ MODEL_DIR = BASE_DIR
 def load_artifacts():
 
     models = {
-        "Tuned Logistic Regression": joblib.load(
+        "Logistic Regression": joblib.load(
             MODEL_DIR / "logistic_regression.joblib"
         ),
-        "Tuned SVM": joblib.load(
+        "SVM": joblib.load(
             MODEL_DIR / "svm.joblib"
         ),
-        "Tuned Random Forest": joblib.load(
+        "Random Forest": joblib.load(
             MODEL_DIR / "random_forest.joblib"
         ),
-        "Tuned XGBoost": joblib.load(
+        "XGBoost": joblib.load(
             MODEL_DIR / "xgboost.joblib"
         )
     }
@@ -148,6 +187,30 @@ def load_artifacts():
     background = joblib.load(
         MODEL_DIR / "dalex_background.joblib"
     )
+
+    # Use the categories stored inside the fitted pipeline as the
+    # authoritative app options. This prevents stale metadata categories
+    # from being sent to the model as unknown values.
+    reference_model = models["Tuned XGBoost"]
+    preprocessor = reference_model.named_steps["pre_smote"]
+    categorical_encoder = preprocessor.named_transformers_["categorical"]
+
+    categorical_columns = next(
+        columns
+        for name, transformer, columns in preprocessor.transformers_
+        if name == "categorical"
+    )
+
+    for model_column, categories in zip(
+        categorical_columns,
+        categorical_encoder.categories_
+    ):
+        app_column = APP_COLUMN_MAP[model_column]
+        metadata["categorical"][app_column] = [
+            value.item() if isinstance(value, np.generic) else value
+            for value in categories
+            if not pd.isna(value)
+        ]
 
     return models, metadata, background
 
@@ -233,8 +296,7 @@ CATEGORY_ORDER = {
     ],
 
     "maternal_health_status": [
-        "Very bad",
-        "Bad",
+        "Poor",
         "Moderate",
         "Good",
         "Very good"
@@ -255,8 +317,7 @@ CATEGORY_ORDER = {
 
     "multiple_birth": [
         "Single birth",
-        "1st of multiple",
-        "2nd of multiple"
+        "Twin birth"
     ],
 
     # Nominal variables have no low-to-high ranking
@@ -276,12 +337,8 @@ CATEGORY_ORDER = {
     ],
 
     "marital_status": [
-        "Never in union",
-        "Living with partner",
-        "Married",
-        "No longer living together/separated",
-        "Divorced",
-        "Widowed"
+        "Not married",
+        "Married"
     ]
 }
 
@@ -344,6 +401,46 @@ def mortality_probability(model, data):
     return model.predict_proba(data)[:, 1]
 
 
+def get_model_categorical_columns(model):
+    """Return categorical columns recorded in the fitted preprocessor."""
+
+    preprocessor = model.named_steps["pre_smote"]
+
+    return list(next(
+        columns
+        for name, transformer, columns in preprocessor.transformers_
+        if name == "categorical"
+    ))
+
+
+def prepare_model_input(values, model):
+    """Create one row with the exact names and dtypes used in training."""
+
+    data = pd.DataFrame([values]).rename(
+        columns=MODEL_COLUMN_MAP
+    )
+
+    expected_columns = list(model.feature_names_in_)
+    missing_columns = [
+        column for column in expected_columns
+        if column not in data.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(
+            "Missing model columns: " + ", ".join(missing_columns)
+        )
+
+    data = data.reindex(columns=expected_columns)
+
+    # Birth Order is categorical in the fitted OrdinalEncoder. Casting all
+    # categorical inputs to object avoids numeric/object dtype conflicts.
+    for column in get_model_categorical_columns(model):
+        data[column] = data[column].astype(object)
+
+    return data
+
+
 def classify_risk(probability, thresholds):
     """Classify probability using the configured thresholds."""
 
@@ -362,13 +459,25 @@ def classify_risk(probability, thresholds):
 
 background = background.copy()
 
-for variable in metadata["categorical"]:
+for variable, replacements in BACKGROUND_CATEGORY_MAP.items():
     if variable in background.columns:
-        background[variable] = (
-            background[variable]
-            .astype(object)
-            .where(background[variable].notna(), np.nan)
+        background[variable] = background[variable].replace(
+            replacements
         )
+
+background = background.rename(columns=MODEL_COLUMN_MAP)
+
+reference_model = models["Tuned XGBoost"]
+background = background.reindex(
+    columns=reference_model.feature_names_in_
+)
+
+for variable in get_model_categorical_columns(reference_model):
+    background[variable] = (
+        background[variable]
+        .astype(object)
+        .where(background[variable].notna(), np.nan)
+    )
 
 
 # ---------------------------------------------------------
@@ -546,13 +655,12 @@ if "last_prediction_values" in st.session_state:
 
 if submitted:
 
-    input_data = pd.DataFrame(
-        [user_values]
-    ).reindex(
-        columns=metadata["feature_order"]
-    )
-
     try:
+        input_data = prepare_model_input(
+            user_values,
+            selected_model
+        )
+
         selected_probability = float(
             selected_model.predict_proba(input_data)[0, 1]
         )
@@ -562,12 +670,16 @@ if submitted:
             thresholds
         )
 
-    except Exception:
+    except Exception as error:
         st.error(
             "The prediction could not be completed. Check that "
             "the entered values and saved model pipeline use "
             "the same variable names and categories."
         )
+
+        with st.expander("Prediction diagnostic details"):
+            st.code(f"{type(error).__name__}: {error}")
+
         st.stop()
 
     st.subheader("Prediction Result")
@@ -614,8 +726,13 @@ if submitted:
 
     for model_name, model in models.items():
 
+        model_input = prepare_model_input(
+            user_values,
+            model
+        )
+
         probability = float(
-            model.predict_proba(input_data)[0, 1]
+            model.predict_proba(model_input)[0, 1]
         )
 
         comparison_results.append({
