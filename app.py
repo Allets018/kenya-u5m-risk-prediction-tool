@@ -15,7 +15,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Under-Five Mortality Risk Tool",
-    page_icon="👶",
+    page_icon="ðŸ‘¶",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -166,16 +166,16 @@ BACKGROUND_CATEGORY_MAP = {
 def load_artifacts():
 
     models = {
-        "Logistic Regression": joblib.load(
+        "Tuned Logistic Regression": joblib.load(
             MODEL_DIR / "logistic_regression.joblib"
         ),
-        "SVM": joblib.load(
+        "Tuned SVM": joblib.load(
             MODEL_DIR / "svm.joblib"
         ),
-        "Random Forest": joblib.load(
+        "Tuned Random Forest": joblib.load(
             MODEL_DIR / "random_forest.joblib"
         ),
-        "XGBoost": joblib.load(
+        "Tuned XGBoost": joblib.load(
             MODEL_DIR / "xgboost.joblib"
         )
     }
@@ -191,7 +191,13 @@ def load_artifacts():
     # Use the categories stored inside the fitted pipeline as the
     # authoritative app options. This prevents stale metadata categories
     # from being sent to the model as unknown values.
-    reference_model = models["XGBoost"]
+    reference_model = next(
+        (
+            model for model_name, model in models.items()
+            if "xgboost" in model_name.lower()
+        ),
+        next(iter(models.values()))
+    )
     preprocessor = reference_model.named_steps["pre_smote"]
     categorical_encoder = preprocessor.named_transformers_["categorical"]
 
@@ -467,7 +473,13 @@ for variable, replacements in BACKGROUND_CATEGORY_MAP.items():
 
 background = background.rename(columns=MODEL_COLUMN_MAP)
 
-reference_model = models["Tuned XGBoost"]
+reference_model = next(
+    (
+        model for model_name, model in models.items()
+        if "xgboost" in model_name.lower()
+    ),
+    next(iter(models.values()))
+)
 background = background.reindex(
     columns=reference_model.feature_names_in_
 )
@@ -526,13 +538,14 @@ st.warning(
 # ---------------------------------------------------------
 
 model_names = list(models.keys())
-default_model = "Tuned XGBoost"
-
-default_index = (
-    model_names.index(default_model)
-    if default_model in model_names
-    else 0
+default_model = next(
+    (
+        model_name for model_name in model_names
+        if "xgboost" in model_name.lower()
+    ),
+    model_names[0]
 )
+default_index = model_names.index(default_model)
 
 with st.sidebar:
 
