@@ -15,7 +15,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Under-Five Mortality Risk Tool",
-    page_icon="ðŸ‘¶",
+    page_icon="👶",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -166,16 +166,16 @@ BACKGROUND_CATEGORY_MAP = {
 def load_artifacts():
 
     models = {
-        "Tuned Logistic Regression": joblib.load(
+        "Logistic Regression": joblib.load(
             MODEL_DIR / "logistic_regression.joblib"
         ),
-        "Tuned SVM": joblib.load(
+        "SVM": joblib.load(
             MODEL_DIR / "svm.joblib"
         ),
-        "Tuned Random Forest": joblib.load(
+        "Random Forest": joblib.load(
             MODEL_DIR / "random_forest.joblib"
         ),
-        "Tuned XGBoost": joblib.load(
+        "XGBoost": joblib.load(
             MODEL_DIR / "xgboost.joblib"
         )
     }
