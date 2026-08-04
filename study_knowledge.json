@@ -1,0 +1,365 @@
+[
+  {
+    "title": "Study title and purpose",
+    "keywords": [
+      "title",
+      "purpose",
+      "study about",
+      "research"
+    ],
+    "content": "The study is titled Development of a Predictive Explainable Machine Learning-Based Risk Assessment Tool for Under-Five Mortality in Kenya. It uses 2022 Kenya Demographic and Health Survey data to develop, compare, explain, and deploy machine-learning models that estimate the probability of death before age five."
+  },
+  {
+    "title": "Background and problem statement",
+    "keywords": [
+      "background",
+      "problem",
+      "why study",
+      "gap",
+      "under-five mortality Kenya"
+    ],
+    "content": "Under-five mortality remains an important public-health problem in Kenya. Earlier Kenyan studies have mainly used conventional regression and survival methods to identify population-level associations, but these approaches do not directly provide individual risk estimates and may not capture complex non-linear interactions. The study addresses this gap by comparing four supervised machine-learning algorithms, adding DALEX explainability, and translating the selected model into an interactive risk assessment prototype."
+  },
+  {
+    "title": "Main objective",
+    "keywords": [
+      "main objective",
+      "general objective"
+    ],
+    "content": "The main objective is to develop a machine learning-based risk assessment tool for predicting under-five mortality in Kenya using KDHS 2022 data."
+  },
+  {
+    "title": "Specific objectives",
+    "keywords": [
+      "specific objectives",
+      "objectives one two three four"
+    ],
+    "content": "The specific objectives are: (1) to develop machine-learning predictive models using Logistic Regression, Support Vector Machine, Random Forest, and Extreme Gradient Boosting; (2) to evaluate their performance using sensitivity or recall, specificity, precision, F1-score, ROC-AUC, and Cohen's Kappa; (3) to apply DALEX explainable artificial intelligence to identify and interpret influential predictors; and (4) to deploy a risk assessment tool that estimates mortality probability and classifies children into risk categories."
+  },
+  {
+    "title": "Research questions",
+    "keywords": [
+      "research questions",
+      "questions"
+    ],
+    "content": "The research questions ask how the four models can be developed and trained, how well they predict under-five mortality using the selected evaluation metrics, which predictors have the greatest influence when DALEX is applied, and how the models can be used to develop a risk assessment tool."
+  },
+  {
+    "title": "Study significance",
+    "keywords": [
+      "significance",
+      "importance",
+      "beneficiaries",
+      "policy"
+    ],
+    "content": "The study contributes a predictive rather than purely association-based approach to child-survival research in Kenya. It provides a transparent workflow for researchers, an interpretable risk-screening prototype for policymakers and health managers, and evidence that may support prioritization of vulnerable children and maternal-and-child-health resources."
+  },
+  {
+    "title": "Scope and design",
+    "keywords": [
+      "scope",
+      "research design",
+      "cross-sectional",
+      "secondary data"
+    ],
+    "content": "The study uses a cross-sectional predictive modelling design based on secondary 2022 KDHS birth-history data. The analytical unit is the child record, together with associated maternal and household characteristics. The analysis focuses on supervised binary classification of survival versus death before age five."
+  },
+  {
+    "title": "Data source and sample",
+    "keywords": [
+      "data source",
+      "KDHS",
+      "sample",
+      "5115",
+      "observations"
+    ],
+    "content": "The analysis uses birth-history data from the 2022 Kenya Demographic and Health Survey. The final analytical dataset contains 5,115 child records. Each record represents one child and includes the under-five mortality outcome together with 13 maternal, child, birth, and household predictors."
+  },
+  {
+    "title": "Outcome distribution",
+    "keywords": [
+      "outcome distribution",
+      "alive",
+      "deaths",
+      "class imbalance",
+      "mortality prevalence"
+    ],
+    "content": "The outcome is coded 0 for survival and 1 for under-five death. Among 5,115 children, 4,696 or 91.81% were alive and 419 or 8.19% had died before age five. This approximately 11-to-1 imbalance motivated the use of class-sensitive metrics and SMOTE or SMOTENC in the training process."
+  },
+  {
+    "title": "Predictor variables",
+    "keywords": [
+      "predictors",
+      "variables",
+      "features",
+      "13 predictors"
+    ],
+    "content": "The 13 predictors are maternal age at first birth, preceding birth interval, antenatal care visits, birth weight, maternal education, maternal health status, household wealth, birth order, multiple-birth status, child sex, birth assistance, residence, and marital status. Four predictors are continuous and nine are categorical. Birth order is treated as categorical because its association with mortality may be non-linear."
+  },
+  {
+    "title": "Continuous descriptive statistics",
+    "keywords": [
+      "descriptive statistics",
+      "mean",
+      "standard deviation",
+      "continuous variables"
+    ],
+    "content": "Maternal age at first birth had a mean of 24.58 years and standard deviation of 5.06. Preceding birth interval had a mean of 46.43 months and standard deviation of 23.94. Antenatal care visits averaged 4.77 with a standard deviation of 2.40. Birth weight averaged 3,205.80 grams with a standard deviation of 644.05 grams."
+  },
+  {
+    "title": "Categorical distributions",
+    "keywords": [
+      "categorical distribution",
+      "education",
+      "health",
+      "wealth",
+      "residence",
+      "marital"
+    ],
+    "content": "The largest maternal education category was secondary education at 39.20%. Most mothers had good or very good health in the original analysis, most were married, and rural residence accounted for 60.84%. Single births represented 93.43%, male and female children were nearly equally represented, and 78.91% of births had recorded birth assistance. The app displays simplified maternal-health categories of Poor, Moderate, and Good and household-wealth categories of Poor, Middle, and Rich."
+  },
+  {
+    "title": "Outlier assessment",
+    "keywords": [
+      "outliers",
+      "capping",
+      "winsorization",
+      "IQR",
+      "boxplots"
+    ],
+    "content": "Continuous predictors were examined using boxplots and the interquartile-range rule. Extreme observations identified in maternal age at first birth and birth weight were capped at the acceptable limits, while the median and central spread were preserved. The purpose was to reduce the influence of extreme values without deleting child records."
+  },
+  {
+    "title": "Correlation findings",
+    "keywords": [
+      "correlation",
+      "multicollinearity",
+      "0.72",
+      "heatmap"
+    ],
+    "content": "Maternal age at first birth had weak negative correlations with preceding birth interval (-0.26), antenatal care visits (-0.28), and birth weight (-0.30). Preceding birth interval correlated positively with antenatal care visits (0.61) and birth weight (0.64). The strongest correlation was between antenatal care visits and birth weight at 0.72. All continuous predictors were retained because the correlation did not indicate complete redundancy."
+  },
+  {
+    "title": "Chi-square findings",
+    "keywords": [
+      "chi-square",
+      "Cramer's V",
+      "association",
+      "p value",
+      "child sex"
+    ],
+    "content": "Pearson chi-square tests found significant associations between under-five mortality and maternal education, maternal health status, marital status, birth order, multiple-birth status, birth assistance, household wealth, and residence, all with p-values below 0.001. Child sex was not significant, with chi-square 0.10 and p = 0.746. Maternal health status had the largest Cramer's V among maternal factors at 0.42, birth order had 0.41, birth assistance 0.37, multiple-birth status 0.36, wealth 0.34, maternal education 0.32, marital status 0.21, and residence 0.19."
+  },
+  {
+    "title": "Missing data and preprocessing",
+    "keywords": [
+      "missing values",
+      "imputation",
+      "preprocessing",
+      "clean data"
+    ],
+    "content": "Data cleaning and transformation included checking duplicates and missing values, treating incomplete continuous predictors using median imputation, treating categorical missingness using the most frequent category, encoding categorical predictors, standardizing continuous predictors for algorithms that required scaling, and checking extreme observations. The final modelling data contained no untreated missing values, duplicates, or extreme observations."
+  },
+  {
+    "title": "Zero and near-zero variance",
+    "keywords": [
+      "zero variance",
+      "near zero variance",
+      "feature removal"
+    ],
+    "content": "None of the 13 predictors had zero variance or near-zero variance. All predictors therefore retained enough variation to remain in the modelling dataset."
+  },
+  {
+    "title": "Data partitioning",
+    "keywords": [
+      "train test split",
+      "70 30",
+      "3580",
+      "1535",
+      "stratified"
+    ],
+    "content": "The data were divided using a stratified 70:30 training-test split. The training set contained 3,580 children, including 3,287 survivors and 293 deaths. The test set contained 1,535 children, including 1,409 survivors and 126 deaths. Both sets retained approximately 91.8% survival and 8.2% mortality."
+  },
+  {
+    "title": "SMOTE and class imbalance",
+    "keywords": [
+      "SMOTE",
+      "SMOTENC",
+      "oversampling",
+      "class balance"
+    ],
+    "content": "SMOTE or SMOTENC was applied only to the training data to increase representation of the minority death class. The untouched test set retained the original mortality prevalence so that final evaluation reflected realistic class imbalance. Oversampling was kept inside the training workflow to reduce information leakage."
+  },
+  {
+    "title": "Cross-validation and tuning",
+    "keywords": [
+      "cross-validation",
+      "repeated stratified",
+      "grid search",
+      "hyperparameter tuning"
+    ],
+    "content": "Baseline and tuned versions of each algorithm were assessed using repeated stratified five-fold cross-validation. Grid search evaluated candidate hyperparameters using the same folds. Recall was given greater priority because failing to identify an actual death was considered more serious than generating a false alert, while accuracy, precision, specificity, F1-score, ROC-AUC, and Cohen's Kappa were also considered."
+  },
+  {
+    "title": "Logistic Regression development",
+    "keywords": [
+      "logistic regression",
+      "baseline model",
+      "untuned logistic"
+    ],
+    "content": "Logistic Regression provided an interpretable probabilistic baseline. The retained version achieved accuracy 0.881, precision 0.399, recall 0.868, specificity 0.883, F1-score 0.546, ROC-AUC 0.938, and Cohen's Kappa 0.488. It had the highest recall but generated more false-positive death classifications than the ensemble models."
+  },
+  {
+    "title": "Support Vector Machine development",
+    "keywords": [
+      "SVM",
+      "support vector machine",
+      "kernel"
+    ],
+    "content": "The Support Vector Machine was included to model potentially non-linear class boundaries. Its retained version achieved accuracy 0.926, precision 0.535, recall 0.772, specificity 0.940, F1-score 0.631, ROC-AUC 0.947, and Cohen's Kappa 0.592."
+  },
+  {
+    "title": "Random Forest development",
+    "keywords": [
+      "random forest",
+      "bagging",
+      "trees"
+    ],
+    "content": "Random Forest combined multiple decision trees to reduce the instability of a single tree. Its retained version achieved accuracy 0.952, precision 0.704, recall 0.724, specificity 0.973, F1-score 0.711, ROC-AUC 0.953, and Cohen's Kappa 0.685. It had the highest specificity and ROC-AUC but the lowest recall among the four retained models."
+  },
+  {
+    "title": "XGBoost development and selection",
+    "keywords": [
+      "XGBoost",
+      "best model",
+      "selected model",
+      "boosting"
+    ],
+    "content": "XGBoost builds trees sequentially so that later trees correct errors from earlier trees. It achieved accuracy 0.959, precision 0.721, recall 0.822, specificity 0.971, F1-score 0.767, ROC-AUC 0.952, and Cohen's Kappa 0.744. It was selected as the best-performing model because it achieved the strongest overall balance across the metrics rather than simply maximizing one measure."
+  },
+  {
+    "title": "Overall model ranking",
+    "keywords": [
+      "ranking",
+      "overall score",
+      "first second third fourth"
+    ],
+    "content": "The weighted overall ranking assigned recall twice the weight of the other metrics. XGBoost ranked first with an overall score of 0.845, Random Forest second with 0.802, Support Vector Machine third with 0.763, and Logistic Regression fourth with 0.733."
+  },
+  {
+    "title": "Evaluation metric definitions",
+    "keywords": [
+      "accuracy",
+      "precision",
+      "recall",
+      "specificity",
+      "F1",
+      "ROC-AUC",
+      "Kappa",
+      "metrics"
+    ],
+    "content": "Accuracy is the proportion of all cases classified correctly. Precision is the proportion of predicted deaths that are actual deaths. Recall or sensitivity is the proportion of actual deaths correctly detected. Specificity is the proportion of survivors correctly identified. F1-score balances precision and recall. ROC-AUC measures discrimination across thresholds. Cohen's Kappa measures agreement beyond chance."
+  },
+  {
+    "title": "Confusion matrix definitions",
+    "keywords": [
+      "confusion matrix",
+      "true positive",
+      "false positive",
+      "false negative",
+      "true negative"
+    ],
+    "content": "In this study, a true positive is an under-five death correctly predicted as death, a true negative is a survivor correctly predicted as survival, a false positive is a survivor incorrectly predicted as death, and a false negative is a death incorrectly predicted as survival."
+  },
+  {
+    "title": "DALEX purpose",
+    "keywords": [
+      "DALEX",
+      "explainable AI",
+      "XAI",
+      "interpretability"
+    ],
+    "content": "DALEX was applied to the selected XGBoost model to make its predictions more transparent. The study used global permutation variable importance, individual SHAP explanations, individual breakdown plots, and partial dependence profiles. These results explain predictive model behaviour and should not be interpreted as proof of causation."
+  },
+  {
+    "title": "Global variable importance findings",
+    "keywords": [
+      "global importance",
+      "variable importance",
+      "dropout loss",
+      "birth weight"
+    ],
+    "content": "Birth weight was the most important global predictor in the XGBoost model, with dropout loss around 0.148. It was followed by multiple-birth status at about 0.019, antenatal care visits at 0.018, preceding birth interval and maternal health status at about 0.017, wealth at 0.011, birth assistance at 0.009, and residence at 0.005. The remaining variables added less unique predictive information after the other predictors were considered."
+  },
+  {
+    "title": "Individual SHAP findings",
+    "keywords": [
+      "SHAP",
+      "high-risk child",
+      "1950 grams",
+      "individual explanation"
+    ],
+    "content": "For the selected high-risk child, a birth weight of 1,950 grams produced the largest positive SHAP contribution at about 0.293. Twin-birth status contributed about 0.137, a preceding birth interval of 16 months about 0.098, one antenatal visit about 0.084, and poor maternal health about 0.074. Lack of birth assistance, poorer wealth, young maternal age at first birth, and no maternal education also increased the prediction."
+  },
+  {
+    "title": "Individual breakdown findings",
+    "keywords": [
+      "breakdown",
+      "0.998",
+      "intercept",
+      "high-risk prediction"
+    ],
+    "content": "The individual breakdown began from the model's average probability of about 0.103 and increased to a final probability of about 0.998 for the selected high-risk child. The largest sequential increases came from a 16-month preceding birth interval, poor maternal health, twin-birth status, one antenatal visit, low birth weight, lack of birth assistance, no maternal education, poorer wealth, young maternal age at first birth, and rural residence."
+  },
+  {
+    "title": "Partial dependence findings",
+    "keywords": [
+      "partial dependence",
+      "PDP",
+      "continuous predictors",
+      "categorical predictors"
+    ],
+    "content": "The partial dependence profiles showed generally higher predicted mortality for lower birth weight, shorter preceding birth intervals, fewer antenatal care visits, twin births, poor maternal health, lack of birth assistance, and rural residence. Maternal age at first birth and birth order showed non-linear patterns. Child sex and marital status produced relatively small changes in average predicted probability."
+  },
+  {
+    "title": "Risk assessment tool workflow",
+    "keywords": [
+      "app",
+      "tool",
+      "Streamlit",
+      "how tool works",
+      "workflow"
+    ],
+    "content": "The Streamlit tool accepts maternal, child, birth, and household inputs, sends them through the saved preprocessing pipeline, and obtains a probability of under-five death from the selected model. It then assigns a study-specific low, moderate, or high risk category, compares predictions from all four models, and can generate an individual DALEX breakdown explanation."
+  },
+  {
+    "title": "Risk thresholds",
+    "keywords": [
+      "thresholds",
+      "low risk",
+      "moderate risk",
+      "high risk"
+    ],
+    "content": "The application reads the low and high thresholds from app_metadata.joblib. A probability below the low threshold is classified as low risk, a probability from the low threshold to below the high threshold is moderate risk, and a probability at or above the high threshold is high risk. These are study-specific categories used by the prototype."
+  },
+  {
+    "title": "Ethical considerations",
+    "keywords": [
+      "ethics",
+      "NACOSTI",
+      "confidentiality",
+      "DHS agreement"
+    ],
+    "content": "The study uses anonymized secondary KDHS data and follows the DHS Program data-use agreement. Ethical approval and the relevant research authorization are required, the source data must not be redistributed, and analyses should preserve confidentiality and academic integrity."
+  },
+  {
+    "title": "Study limitations",
+    "keywords": [
+      "limitations",
+      "weaknesses",
+      "generalizability",
+      "causality"
+    ],
+    "content": "The analysis is based on secondary cross-sectional survey data and is therefore limited by the variables and measurement quality available in the KDHS. Predictive associations do not establish causality. Model performance should also be confirmed through external validation before the tool is considered for operational health-system use."
+  }
+]
