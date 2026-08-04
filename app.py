@@ -302,11 +302,9 @@ CATEGORY_ORDER = {
     ],
 
     "maternal_health_status": [
-        "Very bad",
         "Bad",
         "Moderate",
         "Good",
-        "Very good"
     ],
 
     "birth_order": (
@@ -315,11 +313,9 @@ CATEGORY_ORDER = {
     ),
 
     "wealth_index": [
-        "Poorest",
-        "Poorer",
+        "Poor",
         "Middle",
-        "Richer",
-        "Richest"
+        "Rich",
     ],
 
     "multiple_birth": [
