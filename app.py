@@ -223,6 +223,48 @@ st.markdown(
         margin-top: 2.4rem;
     }
 
+
+
+    .nav-caption {
+        color: #B9C7D8;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        margin-top: -0.25rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .risk-band-card {
+        background: #FFFFFF;
+        border: 1px solid var(--border);
+        border-top: 5px solid var(--blue);
+        border-radius: 12px;
+        padding: 1rem 1.05rem;
+        min-height: 118px;
+        box-shadow: 0 4px 14px rgba(8, 28, 54, 0.045);
+    }
+
+    .risk-band-card.moderate {
+        border-top-color: var(--navy);
+    }
+
+    .risk-band-card.high {
+        border-top-color: var(--black);
+    }
+
+    .risk-band-title {
+        color: var(--navy);
+        font-size: 1rem;
+        font-weight: 780;
+        margin-bottom: 0.35rem;
+    }
+
+    .risk-band-value {
+        color: var(--ink);
+        font-size: 0.92rem;
+        line-height: 1.5;
+        margin: 0;
+    }
+
     @media (max-width: 780px) {
         .block-container {
             padding-left: 0.9rem;
@@ -885,29 +927,46 @@ if "assistant_messages" not in st.session_state:
 
 
 # =========================================================
-# SIDEBAR
+# SIDEBAR NAVIGATION
 # =========================================================
 
 model_names = list(models.keys())
 
 with st.sidebar:
+    st.markdown("## Navigation")
+    st.markdown(
+        '<div class="nav-caption">Choose the section you want to use.</div>',
+        unsafe_allow_html=True,
+    )
+
+    selected_page = st.radio(
+        "Application section",
+        [
+            "Risk assessment",
+            "Model comparison and DALEX",
+            "Study assistant",
+        ],
+        label_visibility="collapsed",
+    )
+
+    st.markdown("---")
     st.markdown("## Model")
+
     selected_model_name = st.selectbox(
         "Prediction model",
         model_names,
         index=model_names.index("XGBoost"),
+        help=(
+            "XGBoost was selected as the best-performing model in the "
+            "study. The other models remain available for comparison."
+        ),
     )
 
-    st.markdown("---")
-    st.markdown("## Risk bands")
-    st.write(f"Low: below {thresholds['low']:.0%}")
-    st.write(
-        f"Moderate: {thresholds['low']:.0%}–"
-        f"{thresholds['high']:.0%}"
-    )
-    st.write(f"High: {thresholds['high']:.0%} or above")
+    if selected_model_name == "XGBoost":
+        st.caption("Study-selected best-performing model")
 
     st.markdown("---")
+
     if st.button("Clear assessment", use_container_width=True):
         st.session_state.last_profile = None
         st.session_state.breakdown_figure = None
@@ -917,7 +976,7 @@ with st.sidebar:
 
 
 # =========================================================
-# HEADER AND SINGLE DISCLAIMER
+# HEADER
 # =========================================================
 
 st.markdown(
@@ -934,22 +993,12 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.warning(
-    "Research and educational use only. This application does not provide "
-    "a clinical diagnosis and must not replace assessment by a qualified "
-    "healthcare professional."
-)
-
-assessment_tab, explanation_tab, assistant_tab = st.tabs(
-    ["Risk assessment", "Model comparison and DALEX", "Study assistant"]
-)
-
 
 # =========================================================
-# RISK ASSESSMENT
+# RISK ASSESSMENT PAGE
 # =========================================================
 
-with assessment_tab:
+if selected_page == "Risk assessment":
     st.subheader("Enter the child profile")
     st.markdown(
         '<p class="section-note">Complete the maternal, child, and household fields below.</p>',
@@ -1018,14 +1067,62 @@ with assessment_tab:
     else:
         st.info("Enter the profile and select **Predict mortality risk**.")
 
+    # Risk categories are intentionally placed at the bottom of this page.
+    st.markdown("### Risk categories")
+    low_column, moderate_column, high_column = st.columns(3)
+
+    with low_column:
+        st.markdown(
+            f"""
+            <div class="risk-band-card">
+                <div class="risk-band-title">Low risk</div>
+                <p class="risk-band-value">
+                    Predicted probability below {thresholds['low']:.0%}.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with moderate_column:
+        st.markdown(
+            f"""
+            <div class="risk-band-card moderate">
+                <div class="risk-band-title">Moderate risk</div>
+                <p class="risk-band-value">
+                    Predicted probability from {thresholds['low']:.0%}
+                    to below {thresholds['high']:.0%}.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with high_column:
+        st.markdown(
+            f"""
+            <div class="risk-band-card high">
+                <div class="risk-band-title">High risk</div>
+                <p class="risk-band-value">
+                    Predicted probability of {thresholds['high']:.0%}
+                    or higher.
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
 
 # =========================================================
-# MODEL COMPARISON AND DALEX
+# MODEL COMPARISON AND DALEX PAGE
 # =========================================================
 
-with explanation_tab:
+elif selected_page == "Model comparison and DALEX":
     if st.session_state.last_profile is None:
-        st.info("Generate a prediction first to view model comparison and DALEX.")
+        st.info(
+            "Generate a prediction on the **Risk assessment** page first "
+            "to view model comparison and DALEX."
+        )
     else:
         comparison = calculate_all_predictions(
             st.session_state.last_profile
@@ -1037,6 +1134,11 @@ with explanation_tab:
         )
 
         st.subheader("Model comparison")
+        st.markdown(
+            '<p class="section-note">Compare the mortality probability assigned by each trained model.</p>',
+            unsafe_allow_html=True,
+        )
+
         display_table = comparison.copy()
         display_table["Mortality probability"] = display_table[
             "Mortality probability"
@@ -1141,10 +1243,10 @@ with explanation_tab:
 
 
 # =========================================================
-# COMPREHENSIVE STUDY ASSISTANT
+# STUDY ASSISTANT PAGE
 # =========================================================
 
-with assistant_tab:
+else:
     st.subheader("Study assistant")
     st.markdown(
         '<p class="section-note">Ask about any section of the proposal, methodology, Chapter Four results, DALEX analysis, or the latest prediction.</p>',
@@ -1203,7 +1305,17 @@ with assistant_tab:
         st.rerun()
 
 
+# =========================================================
+# SINGLE DISCLAIMER AT THE BOTTOM OF EVERY PAGE
+# =========================================================
+
 st.markdown(
-    '<div class="footer">Under-Five Mortality Risk Assessment Tool</div>',
+    """
+    <div class="footer">
+        Research and educational use only. This application does not provide
+        a clinical diagnosis and must not replace assessment by a qualified
+        healthcare professional.
+    </div>
+    """,
     unsafe_allow_html=True,
 )
