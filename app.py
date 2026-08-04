@@ -216,26 +216,11 @@ st.markdown(
 
     .footer {
         text-align: center;
-        color: #4B5563;
-        font-size: 0.84rem;
-        line-height: 1.55;
+        color: #788391;
+        font-size: 0.8rem;
         border-top: 1px solid var(--border);
-        padding: 1.1rem 0 0.2rem;
-        margin-top: 2.6rem;
-    }
-
-    .compact-result-note {
-        color: var(--muted);
-        font-size: 0.9rem;
-        margin-top: 0.35rem;
-    }
-
-    .method-box {
-        background: #FFFFFF;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1rem 1.1rem;
-        margin-bottom: 0.75rem;
+        padding-top: 1rem;
+        margin-top: 2.4rem;
     }
 
     @media (max-width: 780px) {
@@ -731,32 +716,6 @@ def extract_breakdown_summary(result, limit=5):
     ]
 
 
-def generate_breakdown_for_profile(profile, model_name):
-    """Generate and store a DALEX breakdown for one submitted profile."""
-
-    input_data = prepare_model_input(profile, model_name)
-    explainer = build_explainer(model_name)
-    breakdown = explainer.predict_parts(
-        new_observation=input_data,
-        type="break_down",
-    )
-
-    figure = breakdown.plot(
-        max_vars=10,
-        show=False,
-    )
-    summary = extract_breakdown_summary(
-        breakdown.result,
-        limit=5,
-    )
-    signature = (
-        model_name,
-        tuple((key, str(value)) for key, value in profile.items()),
-    )
-
-    return figure, summary, signature
-
-
 # =========================================================
 # STUDY KNOWLEDGE ASSISTANT
 # =========================================================
@@ -958,7 +917,7 @@ with st.sidebar:
 
 
 # =========================================================
-# HEADER AND NAVIGATION
+# HEADER AND SINGLE DISCLAIMER
 # =========================================================
 
 st.markdown(
@@ -966,21 +925,23 @@ st.markdown(
     <div class="app-header">
         <h1>Under-Five Mortality Risk Assessment Tool</h1>
         <p>
-            Estimate under-five mortality probability using maternal,
-            child, birth, and household characteristics.
+            Estimate under-five mortality probability, compare four
+            machine-learning models, and explain the selected prediction
+            using DALEX.
         </p>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
-assessment_tab, comparison_tab, assistant_tab, methodology_tab = st.tabs(
-    [
-        "Risk assessment",
-        "Model comparison",
-        "Study assistant",
-        "Methodology",
-    ]
+st.warning(
+    "Research and educational use only. This application does not provide "
+    "a clinical diagnosis and must not replace assessment by a qualified "
+    "healthcare professional."
+)
+
+assessment_tab, explanation_tab, assistant_tab = st.tabs(
+    ["Risk assessment", "Model comparison and DALEX", "Study assistant"]
 )
 
 
@@ -991,7 +952,7 @@ assessment_tab, comparison_tab, assistant_tab, methodology_tab = st.tabs(
 with assessment_tab:
     st.subheader("Enter the child profile")
     st.markdown(
-        '<p class="section-note">Complete the maternal, child, birth, and household fields below.</p>',
+        '<p class="section-note">Complete the maternal, child, and household fields below.</p>',
         unsafe_allow_html=True,
     )
 
@@ -1021,10 +982,7 @@ with assessment_tab:
         st.session_state.breakdown_summary = []
         st.session_state.breakdown_signature = None
 
-    if st.session_state.last_profile is None:
-        st.info("Enter the profile and select **Predict mortality risk**.")
-
-    else:
+    if st.session_state.last_profile is not None:
         try:
             comparison = calculate_all_predictions(
                 st.session_state.last_profile
@@ -1040,94 +998,34 @@ with assessment_tab:
                 st.code(f"{type(error).__name__}: {error}")
             st.stop()
 
-        st.subheader("Prediction result")
         metric_1, metric_2, metric_3 = st.columns(3)
-        metric_1.metric("Predicted probability", f"{probability:.1%}")
+        metric_1.metric("Mortality probability", f"{probability:.1%}")
         metric_2.metric("Risk category", risk)
-        metric_3.metric("Selected model", selected_model_name)
+        metric_3.metric("Model", selected_model_name)
 
         st.markdown(
-            '<p class="compact-result-note">The displayed category is based on the study-specific probability thresholds shown in the sidebar.</p>',
+            f"""
+            <div class="result-panel">
+                <strong>Assessment result</strong>
+                <div class="probability">{probability:.1%}</div>
+                <span class="risk-pill {risk_css_class(risk)}">
+                    {html.escape(risk)}
+                </span>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
-
-        explain_col, spacer_col = st.columns([1, 1])
-        with explain_col:
-            explain_clicked = st.button(
-                "Explain this prediction",
-                type="primary",
-                use_container_width=True,
-            )
-
-        current_signature = (
-            selected_model_name,
-            tuple(
-                (key, str(value))
-                for key, value in st.session_state.last_profile.items()
-            ),
-        )
-
-        if st.session_state.breakdown_signature != current_signature:
-            st.session_state.breakdown_figure = None
-            st.session_state.breakdown_summary = []
-            st.session_state.breakdown_signature = None
-
-        if explain_clicked:
-            try:
-                with st.spinner("Generating the DALEX explanation..."):
-                    (
-                        st.session_state.breakdown_figure,
-                        st.session_state.breakdown_summary,
-                        st.session_state.breakdown_signature,
-                    ) = generate_breakdown_for_profile(
-                        st.session_state.last_profile,
-                        selected_model_name,
-                    )
-            except Exception as error:
-                st.warning("The DALEX explanation could not be generated.")
-                with st.expander("Technical details"):
-                    st.code(f"{type(error).__name__}: {error}")
-
-        if st.session_state.breakdown_figure is not None:
-            with st.expander(
-                "DALEX explanation for this prediction",
-                expanded=True,
-            ):
-                st.plotly_chart(
-                    st.session_state.breakdown_figure,
-                    use_container_width=True,
-                )
-                st.caption(
-                    "Positive contributions increase the predicted mortality "
-                    "probability, while negative contributions decrease it."
-                )
-
-        with st.expander("Review submitted profile", expanded=False):
-            profile_table = pd.DataFrame(
-                {
-                    "Variable": [
-                        LABELS.get(key, key)
-                        for key in st.session_state.last_profile
-                    ],
-                    "Entered value": list(
-                        st.session_state.last_profile.values()
-                    ),
-                }
-            )
-            st.dataframe(
-                profile_table,
-                hide_index=True,
-                use_container_width=True,
-            )
+    else:
+        st.info("Enter the profile and select **Predict mortality risk**.")
 
 
 # =========================================================
-# MODEL COMPARISON
+# MODEL COMPARISON AND DALEX
 # =========================================================
 
-with comparison_tab:
+with explanation_tab:
     if st.session_state.last_profile is None:
-        st.info("Generate a prediction first to compare the four models.")
+        st.info("Generate a prediction first to view model comparison and DALEX.")
     else:
         comparison = calculate_all_predictions(
             st.session_state.last_profile
@@ -1138,12 +1036,7 @@ with comparison_tab:
             "",
         )
 
-        st.subheader("Prediction comparison across models")
-        st.markdown(
-            '<p class="section-note">The table and chart compare the probability assigned to the same submitted profile by each model.</p>',
-            unsafe_allow_html=True,
-        )
-
+        st.subheader("Model comparison")
         display_table = comparison.copy()
         display_table["Mortality probability"] = display_table[
             "Mortality probability"
@@ -1192,6 +1085,59 @@ with comparison_tab:
             margin=dict(l=20, r=55, t=15, b=20),
         )
         st.plotly_chart(figure, use_container_width=True)
+
+        st.subheader("DALEX breakdown")
+        st.markdown(
+            '<p class="section-note">Shows how the entered values increased or decreased the selected model prediction.</p>',
+            unsafe_allow_html=True,
+        )
+
+        signature = (
+            selected_model_name,
+            tuple(
+                (key, str(value))
+                for key, value in st.session_state.last_profile.items()
+            ),
+        )
+
+        if st.session_state.breakdown_signature != signature:
+            st.session_state.breakdown_figure = None
+            st.session_state.breakdown_summary = []
+
+        if st.button(
+            "Generate DALEX explanation",
+            type="primary",
+            use_container_width=True,
+        ):
+            try:
+                with st.spinner("Generating explanation..."):
+                    input_data = prepare_model_input(
+                        st.session_state.last_profile,
+                        selected_model_name,
+                    )
+                    explainer = build_explainer(selected_model_name)
+                    breakdown = explainer.predict_parts(
+                        new_observation=input_data,
+                        type="break_down",
+                    )
+                    st.session_state.breakdown_figure = breakdown.plot(
+                        max_vars=10,
+                        show=False,
+                    )
+                    st.session_state.breakdown_summary = (
+                        extract_breakdown_summary(breakdown.result)
+                    )
+                    st.session_state.breakdown_signature = signature
+            except Exception as error:
+                st.warning("The DALEX explanation could not be generated.")
+                with st.expander("Technical details"):
+                    st.code(f"{type(error).__name__}: {error}")
+
+        if st.session_state.breakdown_figure is not None:
+            st.plotly_chart(
+                st.session_state.breakdown_figure,
+                use_container_width=True,
+            )
 
 
 # =========================================================
@@ -1257,61 +1203,7 @@ with assistant_tab:
         st.rerun()
 
 
-
-# =========================================================
-# METHODOLOGY
-# =========================================================
-
-with methodology_tab:
-    st.subheader("Study methodology")
-    st.markdown(
-        '<p class="section-note">A concise overview of the analytical workflow used to develop the application.</p>',
-        unsafe_allow_html=True,
-    )
-
-    with st.expander("Data and outcome", expanded=True):
-        st.write(
-            "The analysis used birth-history data for 5,115 children from "
-            "the 2022 Kenya Demographic and Health Survey. Under-five "
-            "mortality was coded as 1 for death before age five and 0 for "
-            "survival."
-        )
-
-    with st.expander("Predictors and preprocessing"):
-        st.write(
-            "The models used maternal, child, birth, and household "
-            "predictors. Missing values and extreme observations were "
-            "treated, categorical variables were encoded, continuous "
-            "variables were standardized where required, and class "
-            "imbalance was addressed in the training data using SMOTE."
-        )
-
-    with st.expander("Model development and evaluation"):
-        st.write(
-            "Logistic Regression, Support Vector Machine, Random Forest, "
-            "and XGBoost were developed and compared. Repeated stratified "
-            "five-fold cross-validation and hyperparameter tuning were "
-            "used during model development. Performance was assessed using "
-            "accuracy, precision, recall, specificity, F1-score, ROC-AUC, "
-            "and Cohen's Kappa."
-        )
-
-    with st.expander("Model selection and explainability"):
-        st.write(
-            "XGBoost was selected as the best-performing model based on its "
-            "overall balance across the evaluation metrics. DALEX was used "
-            "to explain global predictor importance and individual "
-            "predictions through SHAP, breakdown, and partial dependence "
-            "analyses."
-        )
-
 st.markdown(
-    """
-    <div class="footer">
-        Research and educational use only. This application does not provide
-        a clinical diagnosis and must not replace assessment by a qualified
-        healthcare professional.
-    </div>
-    """,
+    '<div class="footer">Under-Five Mortality Risk Assessment Tool</div>',
     unsafe_allow_html=True,
 )
